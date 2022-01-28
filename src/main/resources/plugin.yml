@@ -1,0 +1,18 @@
+name: CommandItems
+version: 1.0
+main: me.athlaeos.commanditems.CommandItems
+api-version: 1.14
+authors: [ Athlaeos ]
+description: Allows binding commands to items to be executed when right clicked
+commands:
+  commanditem:
+    aliases: [ci]
+    description: Allows the binding of commands to items
+
+permissions:
+  commanditems.create:
+    default: op
+    description: Allows creating and controlling commands bound to items
+  commanditems.create.op:
+    default: false
+    description: Allows creating and controlling commands bound to items, as well as allowing these items to not require permissions to execute
