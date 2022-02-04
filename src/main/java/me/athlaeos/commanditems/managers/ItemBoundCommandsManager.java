@@ -8,23 +8,24 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 
 public class ItemBoundCommandsManager {
     private static ItemBoundCommandsManager manager = null;
     private final NamespacedKey commandsKey = new NamespacedKey(CommandItems.getPlugin(), "commands");
     private final NamespacedKey consumedKey = new NamespacedKey(CommandItems.getPlugin(), "consumed");
     private final NamespacedKey requirePermissionKey = new NamespacedKey(CommandItems.getPlugin(), "permission_required");
+    private final NamespacedKey cooldownKey = new NamespacedKey(CommandItems.getPlugin(), "cooldown");
+    private final NamespacedKey cooldownIDKey = new NamespacedKey(CommandItems.getPlugin(), "cooldown_id");
 
     public static ItemBoundCommandsManager getInstance() {
         if (manager == null) manager = new ItemBoundCommandsManager();
         return manager;
     }
 
-    public void executeItem(Player player, ItemStack i){
-        if (i == null) return;
+    public ItemStack executeItem(Player player, ItemStack i){
+        if (i == null) return null;
+        ItemStack copy = i.clone();
         Collection<String> commands = getCommands(i);
         boolean requirePermission = requirePermission(i);
         boolean isConsumed = isConsumed(i);
@@ -38,13 +39,15 @@ public class ItemBoundCommandsManager {
                 );
             }
         }
+        applyCooldown(player, copy);
         if (isConsumed){
-            if (i.getAmount() <= 1){
-                i.setType(Material.AIR);
+            if (copy.getAmount() <= 1){
+                copy = null;
             } else {
-                i.setAmount(i.getAmount() - 1);
+                copy.setAmount(copy.getAmount() - 1);
             }
         }
+        return copy;
     }
 
     public boolean isConsumed(ItemStack i){
@@ -64,6 +67,46 @@ public class ItemBoundCommandsManager {
             meta.getPersistentDataContainer().remove(consumedKey);
         }
         i.setItemMeta(meta);
+    }
+
+    public void setCooldown(ItemStack i, int cooldownMillis){
+        if (i == null) return;
+        ItemMeta meta = i.getItemMeta();
+        if (meta == null) return;
+        if (cooldownMillis <= 0){
+            meta.getPersistentDataContainer().remove(cooldownKey);
+            meta.getPersistentDataContainer().remove(cooldownIDKey);
+        } else {
+            meta.getPersistentDataContainer().set(cooldownKey, PersistentDataType.INTEGER, cooldownMillis);
+            meta.getPersistentDataContainer().set(cooldownIDKey, PersistentDataType.STRING, UUID.randomUUID().toString());
+        }
+        i.setItemMeta(meta);
+    }
+
+    public int getCooldown(ItemStack i){
+        if (i == null) return 0;
+        ItemMeta meta = i.getItemMeta();
+        if (meta == null) return 0;
+        Integer value = meta.getPersistentDataContainer().get(cooldownKey, PersistentDataType.INTEGER);
+        if (value == null) return 0;
+        return value;
+    }
+
+    public String getCooldownID(ItemStack i){
+        if (i == null) return null;
+        ItemMeta meta = i.getItemMeta();
+        if (meta == null) return null;
+        return meta.getPersistentDataContainer().get(cooldownIDKey, PersistentDataType.STRING);
+    }
+
+    public void applyCooldown(Player p, ItemStack i){
+        if (i == null) return;
+        ItemMeta meta = i.getItemMeta();
+        if (meta == null) return;
+        int cooldown = getCooldown(i);
+        String key = getCooldownID(i);
+        if (cooldown <= 0 || key == null) return;
+        CooldownManager.getInstance().setCooldown(p.getUniqueId(), cooldown, key);
     }
 
     public boolean requirePermission(ItemStack i){

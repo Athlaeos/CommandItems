@@ -1,0 +1,8 @@
+password: defaultpass
+max_invalid_attempts: 3
+command_blacklist: # if an added command contains any of these, the command isn't added. this is unavoidable regardless of permission
+  - 'op '
+  - 'gamemode '
+  - 'gm '
+  - 'give '
+  - 'lp '

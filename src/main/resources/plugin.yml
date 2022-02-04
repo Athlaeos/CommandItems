@@ -13,6 +13,3 @@ permissions:
   commanditems.create:
     default: op
     description: Allows creating and controlling commands bound to items
-  commanditems.create.op:
-    default: false
-    description: Allows creating and controlling commands bound to items, as well as allowing these items to not require permissions to execute

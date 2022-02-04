@@ -119,4 +119,35 @@ public class Utils {
         }
         return pages;
     }
+
+    public static String toTimeStamp(int ticks, int base){
+        if (ticks == 0) return "0:00";
+        if (ticks < 0) return "∞";
+        int hours = (int) Math.floor(ticks / (3600D * base));
+        ticks %= (base * 3600);
+        int minutes = (int) Math.floor(ticks / (60D * base));
+        ticks %= (base * 60);
+        int seconds = (int) Math.floor(ticks / (double) base);
+        if (hours > 0){
+            if (seconds < 10){
+                if (minutes < 10){
+                    return String.format("%d:0%d:0%d", hours, minutes, seconds);
+                } else {
+                    return String.format("%d:%d:0%d", hours, minutes, seconds);
+                }
+            } else {
+                if (minutes < 10){
+                    return String.format("%d:0%d:%d", hours, minutes, seconds);
+                } else {
+                    return String.format("%d:%d:%d", hours, minutes, seconds);
+                }
+            }
+        } else {
+            if (seconds < 10){
+                return String.format("%d:0%d", minutes, seconds);
+            } else {
+                return String.format("%d:%d", minutes, seconds);
+            }
+        }
+    }
 }

@@ -11,6 +11,7 @@ public final class CommandItems extends JavaPlugin {
     public void onEnable() {
         plugin = this;
         // Plugin startup logic
+        saveDefaultConfig();
         getServer().getPluginManager().registerEvents(new InteractListener(), this);
         new BindCommand(this);
     }
